@@ -1,143 +1,89 @@
-document.addEventListener('DOMContentLoaded', () => {
-    let jobsData = []; // To store job data after upload
+document.getElementById("file-input").addEventListener("change", handleFileUpload);
 
-    // DOM Elements
-    const fileInput = document.getElementById('file-input');
-    const jobList = document.getElementById('job-list');
-    const jobDetailsContent = document.getElementById('job-details-content');
-    const filterLevel = document.getElementById('filter-level');
-    const filterType = document.getElementById('filter-type');
-    const filterSkill = document.getElementById('filter-skill');
-    const sortOptions = document.getElementById('sort-options');
+let jobs = [];
 
-    // Event: File upload
-    fileInput.addEventListener('change', handleFileUpload);
-
-    // Event: Filters
-    filterLevel.addEventListener('change', applyFiltersAndSorting);
-    filterType.addEventListener('change', applyFiltersAndSorting);
-    filterSkill.addEventListener('change', applyFiltersAndSorting);
-
-    // Event: Sort
-    sortOptions.addEventListener('change', applyFiltersAndSorting);
-
-    // Event: Job click (to show details)
-    jobList.addEventListener('click', event => {
-        const jobId = event.target.closest('.job-box')?.dataset.id;
-        if (jobId) displayJobDetails(jobId);
-    });
-
-    function handleFileUpload(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
-                jobsData = JSON.parse(e.target.result);
-                populateFilters(jobsData);
-                renderJobs(jobsData);
+                const rawContent = e.target.result;
+                jobs = JSON.parse(rawContent);
+
+                if (!Array.isArray(jobs)) {
+                    throw new Error("Invalid JSON: Expected an array of job objects");
+                }
+
+                populateFilters(jobs);
+                updateJobList();
             } catch (error) {
-                alert('Invalid JSON format. Please upload a valid job data file.');
+                console.error("Error parsing JSON:", error.message);
+                displayError("Invalid JSON format. Please check the file content.");
             }
         };
         reader.readAsText(file);
+    } else {
+        displayError("No file selected. Please upload a JSON file.");
     }
+}
 
-    function populateFilters(jobs) {
-        // Populate filter options dynamically
-        const levels = new Set(jobs.map(job => job.Level));
-        const types = new Set(jobs.map(job => job.Type));
-        const skills = new Set(jobs.map(job => job.Skill));
+function populateFilters(jobs) {
+    const levels = new Set();
+    const types = new Set();
+    const skills = new Set();
 
-        populateSelect(filterLevel, levels);
-        populateSelect(filterType, types);
-        populateSelect(filterSkill, skills);
-    }
+    jobs.forEach(job => {
+        levels.add(job.Level || "No Data");
+        types.add(job.Type || "No Data");
+        skills.add(job.Skill || "No Data");
+    });
 
-    function populateSelect(selectElement, options) {
-        selectElement.innerHTML = '<option value="">All</option>';
-        options.forEach(option => {
-            const opt = document.createElement('option');
-            opt.value = option;
-            opt.textContent = option;
-            selectElement.appendChild(opt);
-        });
-    }
+    populateDropdown("filter-level", Array.from(levels));
+    populateDropdown("filter-type", Array.from(types));
+    populateDropdown("filter-skill", Array.from(skills));
+}
 
-    function applyFiltersAndSorting() {
-        const levelFilter = filterLevel.value;
-        const typeFilter = filterType.value;
-        const skillFilter = filterSkill.value;
-        const sortOption = sortOptions.value;
+function populateDropdown(elementId, options) {
+    const dropdown = document.getElementById(elementId);
+    dropdown.innerHTML = `<option value="">All</option>`;
+    options.forEach(option => {
+        dropdown.innerHTML += `<option value="${option}">${option}</option>`;
+    });
+}
 
-        let filteredJobs = jobsData;
+function updateJobList() {
+    const jobListContainer = document.getElementById("job-list");
+    jobListContainer.innerHTML = "";
 
-        // Apply filters
-        if (levelFilter) {
-            filteredJobs = filteredJobs.filter(job => job.Level === levelFilter);
-        }
-        if (typeFilter) {
-            filteredJobs = filteredJobs.filter(job => job.Type === typeFilter);
-        }
-        if (skillFilter) {
-            filteredJobs = filteredJobs.filter(job => job.Skill === skillFilter);
-        }
-
-        // Apply sorting
-        filteredJobs.sort((a, b) => {
-            switch (sortOption) {
-                case 'title-asc':
-                    return a.Title.localeCompare(b.Title);
-                case 'title-desc':
-                    return b.Title.localeCompare(a.Title);
-                case 'time-newest':
-                    return new Date(b.Posted) - new Date(a.Posted);
-                case 'time-oldest':
-                    return new Date(a.Posted) - new Date(b.Posted);
-                default:
-                    return 0;
-            }
-        });
-
-        renderJobs(filteredJobs);
-    }
-
-    function renderJobs(jobs) {
-        jobList.innerHTML = ''; // Clear existing jobs
-
-        if (jobs.length === 0) {
-            jobList.innerHTML = '<p>No jobs match the selected filters.</p>';
-            return;
-        }
-
-        jobs.forEach((job, index) => {
-            const jobBox = document.createElement('div');
-            jobBox.className = 'job-box';
-            jobBox.dataset.id = index;
-
-            jobBox.innerHTML = `
-                <h3>${job.Title}</h3>
-                <p><strong>Posted:</strong> ${job.Posted}</p>
-                <p><strong>Type:</strong> ${job.Type}</p>
-                <p><strong>Skill:</strong> ${job.Skill}</p>
-            `;
-            jobList.appendChild(jobBox);
-        });
-    }
-
-    function displayJobDetails(jobId) {
-        const job = jobsData[jobId];
-        if (!job) return;
-
-        jobDetailsContent.innerHTML = `
+    jobs.forEach(job => {
+        const jobBox = document.createElement("div");
+        jobBox.classList.add("job-box");
+        jobBox.innerHTML = `
             <h3>${job.Title}</h3>
-            <p><strong>Posted:</strong> ${job.Posted}</p>
-            <p><strong>Type:</strong> ${job.Type}</p>
-            <p><strong>Level:</strong> ${job.Level}</p>
-            <p><strong>Skill:</strong> ${job.Skill}</p>
-            <p><strong>Detail:</strong> ${job.Detail}</p>
-            <a href="${job['Job Page Link']}" target="_blank">View Job Page</a>
+            <p>${job.Level} - ${job.Type}</p>
         `;
-    }
-});
+        jobBox.addEventListener("click", () => displayJobDetails(job));
+        jobListContainer.appendChild(jobBox);
+    });
+}
+
+function displayJobDetails(job) {
+    const detailsContainer = document.getElementById("job-details-content");
+    detailsContainer.innerHTML = `
+        <h3>${job.Title}</h3>
+        <p><strong>Job No:</strong> ${job["Job No"]}</p>
+        <p><strong>Type:</strong> ${job.Type}</p>
+        <p><strong>Level:</strong> ${job.Level}</p>
+        <p><strong>Estimated Time:</strong> ${job["Estimated Time"]}</p>
+        <p><strong>Skill:</strong> ${job.Skill}</p>
+        <p><strong>Detail:</strong> ${job.Detail}</p>
+        <p><a href="${job["Job Page Link"]}" target="_blank">View Job</a></p>
+    `;
+}
+
+function displayError(message) {
+    const errorContainer = document.getElementById("upload-error");
+    errorContainer.textContent = message;
+    setTimeout(() => (errorContainer.textContent = ""), 5000);
+}
