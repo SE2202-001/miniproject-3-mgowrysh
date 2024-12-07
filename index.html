@@ -3,188 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upwork Job Analysis</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Job Finder</title>
     <style>
-        /* General Styles */
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f8f9fa;
-            color: #2c3e50;
+            background-color: #f9f9f9;
         }
-
         header {
-            background-color: #26a69a;
+            background-color: #333;
             color: white;
-            padding: 1rem;
+            padding: 1rem 2rem;
             text-align: center;
-            font-size: 1.5rem;
-            font-weight: bold;
         }
-
         main {
-            display: flex;
-            gap: 20px;
-            margin: 20px;
+            padding: 2rem;
         }
-
-        h2 {
-            color: #2c3e50;
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
+        .filters {
+            margin-bottom: 2rem;
         }
-
-        /* Upload Section */
-        #upload-section {
-            background-color: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 5px;
-            padding: 20px;
-            width: 100%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        #file-input {
-            margin-top: 10px;
-        }
-
-        /* Filter and Sort Section */
-        #filter-sort-section {
-            background-color: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 5px;
-            padding: 20px;
-            width: 100%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        label {
+        .filters label, .filters select {
             display: block;
-            font-size: 0.9rem;
-            margin: 10px 0 5px;
+            margin: 0.5rem 0;
         }
-
-        select {
-            width: 100%;
-            padding: 5px;
-            font-size: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-
-        /* Job Listings Section */
-        #job-listings {
-            width: 50%;
-            overflow-y: auto;
-            height: 400px;
-            border-right: 1px solid #ddd;
-            background-color: #f5f5f5;
-            border-radius: 5px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .job-box {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            background-color: white;
-            border-radius: 5px;
+        .filters button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
             cursor: pointer;
-            transition: background-color 0.3s, box-shadow 0.3s;
-            margin-bottom: 10px;
-        }
-
-        .job-box:hover {
-            background-color: #e0f7fa;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        }
-
-        .job-box h3 {
-            margin: 0;
             font-size: 1rem;
-            color: #00796b;
         }
-
-        .job-box p {
-            margin: 5px 0;
-            font-size: 0.85rem;
-            color: #616161;
+        .filters button:hover {
+            background-color: #45a049;
         }
-
-        /* Job Details Section */
-        #job-details {
-            width: 50%;
-            background-color: #ffffff;
+        #job-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .job-box {
+            background: white;
+            padding: 1rem;
+            border: 1px solid #ddd;
             border-radius: 5px;
-            padding: 15px;
-            height: 400px;
-            overflow-y: auto;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: calc(33% - 2rem);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-
+        .job-box h3 {
+            margin-top: 0;
+        }
+        .job-box p {
+            margin: 0.5rem 0;
+        }
         #job-details-content {
-            color: #2c3e50;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
     <header>
-        Upwork Job Analysis
+        <h1>Job Finder</h1>
     </header>
-
     <main>
-        <!-- Upload Section -->
-        <section id="upload-section">
-            <h2>Upload Job Data</h2>
-            <input type="file" id="file-input" accept="application/json">
-            <p id="upload-error" class="error"></p>
-        </section>
-
-        <!-- Filter and Sort Section -->
-        <section id="filter-sort-section">
+        <section class="filters">
             <h2>Filter and Sort Jobs</h2>
+            <label for="file-input">Upload Job JSON:</label>
+            <input type="file" id="file-input" accept=".json">
+
             <label for="filter-level">Filter by Level:</label>
-            <select id="filter-level">
-                <option value="">All</option>
-            </select>
+            <select id="filter-level"></select>
 
             <label for="filter-type">Filter by Type:</label>
-            <select id="filter-type">
-                <option value="">All</option>
-            </select>
+            <select id="filter-type"></select>
 
             <label for="filter-skill">Filter by Skill:</label>
-            <select id="filter-skill">
-                <option value="">All</option>
-            </select>
+            <select id="filter-skill"></select>
 
             <label for="sort-options">Sort by:</label>
             <select id="sort-options">
-                <option value="title-asc">Title (A-Z)</option>
-                <option value="title-desc">Title (Z-A)</option>
-                <option value="time-newest">Posted Time (Newest First)</option>
-                <option value="time-oldest">Posted Time (Oldest First)</option>
+                <option value="">Default</option>
+                <option value="title-asc">Title: A to Z</option>
+                <option value="title-desc">Title: Z to A</option>
+                <option value="time-newest">Newest First</option>
+                <option value="time-oldest">Oldest First</option>
             </select>
-        </section>
-    </main>
 
-    <main>
-        <!-- Job Listings -->
-        <section id="job-listings">
+            <button id="apply-filters">Apply Filters</button>
+        </section>
+
+        <section id="job-list">
             <h2>Job Listings</h2>
-            <div id="job-list"></div>
+            <!-- Jobs will be listed here dynamically -->
         </section>
 
-        <!-- Job Details -->
-        <section id="job-details">
-            <h2>Job Details</h2>
-            <div id="job-details-content"></div>
+        <section id="job-details-content">
+            <!-- Job details will be shown here when a job is clicked -->
         </section>
     </main>
 
-    <script src="JobAnalysis.js"></script>
+    <script>
+        // Paste the JavaScript provided earlier here
+    </script>
 </body>
 </html>
